@@ -1,0 +1,69 @@
+{
+ "Alzira": {
+  "practico": [
+   2401,
+   3271,
+   1271
+  ],
+  "teorico": [
+   2880,
+   2883,
+   1829
+  ]
+ },
+ "Gandia": {
+  "practico": [
+   2663,
+   1812,
+   1551
+  ],
+  "teorico": [
+   2361,
+   2575,
+   1351
+  ]
+ },
+ "Requena": {
+  "practico": [
+   578,
+   432,
+   319
+  ],
+  "teorico": [
+   663,
+   588,
+   432
+  ]
+ },
+ "Valencia": {
+  "practico": [
+   0,
+   1,
+   0
+  ]
+ },
+ "Valencia/València ( municipio sin especificar)": {
+  "practico": [
+   18731,
+   19720,
+   9291
+  ],
+  "teorico": [
+   26536,
+   27440,
+   16784
+  ]
+ },
+ "Xàtiva": {
+  "practico": [
+   1821,
+   1556,
+   1064
+  ],
+  "teorico": [
+   1837,
+   1419,
+   1208
+  ]
+ }
+}
