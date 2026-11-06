@@ -58,7 +58,7 @@ def table_rows(rows):
         out.append(
             "<tr>"
             f"<td>{e(r['nombre'])}</td>"
-            f"<td>{e(r['direccion'])} {e(r.get('cp') or '')}</td>"
+            f"<td>{e(r['direccion'])}{(', '+e(r['cp'])) if r.get('cp') else ''}</td>"
             f"<td>{lk(r.get('web') or '', 'web')}</td>"
             f"<td>{e(r.get('telefono') or 'sin datos')}</td>"
             f"<td>{espera}</td>"
