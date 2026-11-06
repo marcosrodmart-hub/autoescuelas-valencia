@@ -1,0 +1,26 @@
+{
+ "Las Palmas de Gran Canaria": {
+  "teorico": [
+   12110,
+   20744,
+   6374
+  ],
+  "practico": [
+   10631,
+   19926,
+   3820
+  ]
+ },
+ "Arrecife": {
+  "teorico": [
+   0,
+   0,
+   0
+  ],
+  "practico": [
+   0,
+   2,
+   0
+  ]
+ }
+}

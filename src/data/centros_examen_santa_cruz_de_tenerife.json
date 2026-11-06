@@ -1,0 +1,50 @@
+{
+ "Pinar de El Hierro, El": {
+  "teorico": [
+   120,
+   307,
+   50
+  ],
+  "practico": [
+   96,
+   88,
+   52
+  ]
+ },
+ "San Sebastián de la Gomera": {
+  "teorico": [
+   225,
+   420,
+   108
+  ],
+  "practico": [
+   211,
+   170,
+   107
+  ]
+ },
+ "Santa Cruz de la Palma": {
+  "teorico": [
+   798,
+   1173,
+   426
+  ],
+  "practico": [
+   722,
+   372,
+   449
+  ]
+ },
+ "Santa Cruz de Tenerife": {
+  "teorico": [
+   10737,
+   15140,
+   5809
+  ],
+  "practico": [
+   8640,
+   10032,
+   4088
+  ]
+ }
+}
