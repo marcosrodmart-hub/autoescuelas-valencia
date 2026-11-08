@@ -1,0 +1,58 @@
+[
+  {
+    "id": "gala-clara",
+    "nombre": "GALA Clara del Rey",
+    "direccion": "Calle Clara del Rey, 81",
+    "municipio": "Madrid",
+    "provincia": "Madrid",
+    "codigo_postal": "28002",
+    "telefono": "671415691",
+    "fuente_url": "https://autoescuelagala.com/autoescuela-clara-del-rey/",
+    "tipo_fuente": "Web oficial del centro",
+    "verificado_fecha": "2026-11-08",
+    "aprobados_dgt_porcentaje": null,
+    "aprobados_dgt_estado": "NO VERIFICADO"
+  },
+  {
+    "id": "gala-goya",
+    "nombre": "GALA Goya",
+    "direccion": "Calle de Goya, 108",
+    "municipio": "Madrid",
+    "provincia": "Madrid",
+    "codigo_postal": "28009",
+    "telefono": "615946629",
+    "fuente_url": "https://autoescuelagala.com/autoescuela-goya/",
+    "tipo_fuente": "Web oficial del centro",
+    "verificado_fecha": "2026-11-08",
+    "aprobados_dgt_porcentaje": null,
+    "aprobados_dgt_estado": "NO VERIFICADO"
+  },
+  {
+    "id": "gala-alcala",
+    "nombre": "GALA San Vidal – Alcalá de Henares",
+    "direccion": "Calle San Vidal, 13",
+    "municipio": "Alcalá de Henares",
+    "provincia": "Madrid",
+    "codigo_postal": "28803",
+    "telefono": "617978359",
+    "fuente_url": "https://autoescuelagala.com/autoescuela-alcala/",
+    "tipo_fuente": "Web oficial del centro",
+    "verificado_fecha": "2026-11-08",
+    "aprobados_dgt_porcentaje": null,
+    "aprobados_dgt_estado": "NO VERIFICADO"
+  },
+  {
+    "id": "lara-plaza",
+    "nombre": "Lara Plaza Elíptica",
+    "direccion": "Avenida Oporto, 4",
+    "municipio": "Madrid",
+    "provincia": "Madrid",
+    "codigo_postal": "28019",
+    "telefono": "914601022 / 658362510",
+    "fuente_url": "https://autoescuelalara.com/tiendas/plaza-eliptica/",
+    "tipo_fuente": "Web oficial del centro",
+    "verificado_fecha": "2026-11-08",
+    "aprobados_dgt_porcentaje": null,
+    "aprobados_dgt_estado": "NO VERIFICADO"
+  }
+]
