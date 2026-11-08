@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# Genera site/ del directorio de autoescuelas (Valencia + Canarias)
-import csv, html, json, os, re, sys
+# Genera site/ del directorio de autoescuelas (Valencia + Canarias + Madrid)
+# y copia el HTML a la raíz, que es lo que publica GitHub Pages.
+import csv, html, json, os, posixpath, re, shutil, sys
 
 D = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(D, "site")
@@ -18,6 +19,7 @@ NAV = (
     '<a href="index.html">Inicio</a>'
     '<a href="valencia.html">Valencia</a>'
     '<a href="canarias.html">Canarias</a>'
+    '<a href="madrid.html">Madrid</a>'
     '<a href="como-elegir.html">Cómo elegir</a>'
     '<a href="adelantar-examen.html">¿Adelantar examen?</a>'
     '<a href="centros-examen.html">Centros Valencia</a>'
@@ -75,6 +77,33 @@ def school_table(rows):
         f"{table_rows(rows)}</table>"
     )
 
+def madrid_rows(items):
+    """Adapta el dataset de Madrid al listado. El % DGT solo se muestra si viene verificado."""
+    rows = []
+    for r in items:
+        direccion = r["direccion"]
+        mun = (r.get("municipio") or "").strip()
+        if mun and mun not in direccion:
+            direccion = f"{direccion}, {mun}"
+        verificado = (
+            r.get("aprobados_dgt_estado") == "VERIFICADO"
+            and r.get("aprobados_dgt_porcentaje") is not None
+        )
+        rows.append({
+            "nombre": r["nombre"],
+            "direccion": direccion,
+            "cp": r.get("codigo_postal") or "",
+            "web": r.get("fuente_url") or "",
+            "telefono": r.get("telefono") or "sin datos",
+            "espera_practicas": "sin datos",
+            "fuente_espera": "",
+            "fuente": r.get("fuente_url") or "",
+            "aprobados_practico_B": str(r["aprobados_dgt_porcentaje"]) if verificado else "sin datos",
+            "periodo_dgt": "",
+            "fuente_dgt": "",
+        })
+    return rows
+
 def nota_esperas():
     return (
         '<p class="nota">Aún no tenemos datos verificados de tiempos de espera para prácticas o examen. '
@@ -87,13 +116,15 @@ def nota_esperas():
 val = load_csv("autoescuelas_valencia.csv")
 lp = load_csv("autoescuelas_las_palmas.csv")
 tf = load_csv("autoescuelas_santa_cruz_de_tenerife.csv")
+mad_src = json.load(open(os.path.join(D, "data/autoescuelas_madrid.json"), encoding="utf-8"))
+mad = madrid_rows(mad_src)
 
 # --- index hub ---
 page(
     "index.html",
     "Directorio de autoescuelas (España)",
     f"""
-<p>Listados con datos públicos citados: dirección, teléfono (si hay), web (si hay) y aprobados del práctico B según microdatos DGT (10/2025–09/2026).</p>
+<p>Listados con datos públicos citados: dirección, teléfono (si hay) y web (si hay). En Valencia y Canarias, si el código de autoescuela está asociado, también figuran los aprobados del práctico B según microdatos DGT (10/2025–09/2026). En la selección de Madrid esos porcentajes están sin datos.</p>
 <ul class="provincias">
 <li><a href="valencia.html"><b>Valencia</b></a> — {len(val)} autoescuelas · <a href="centros-examen.html">centros de examen</a></li>
 <li><a href="canarias.html"><b>Canarias</b></a>
@@ -103,6 +134,7 @@ page(
   <li><a href="centros-examen-canarias.html">centros de examen Canarias</a></li>
   </ul>
 </li>
+<li><a href="madrid.html"><b>Madrid</b></a> — selección parcial de {len(mad)} sedes verificadas, no un directorio exhaustivo · aprobados DGT sin datos</li>
 </ul>
 <p>Guías: <a href="como-elegir.html">cómo elegir si hay lista de espera</a> · <a href="adelantar-examen.html">¿se puede adelantar el examen pagando?</a></p>
 <p class="nota">Ingresos de este proyecto: no se inventan cifras aquí. Ver chat con el dueño.</p>
@@ -114,6 +146,20 @@ page(
     "valencia.html",
     "Autoescuelas en Valencia ciudad",
     f'{nota_esperas()}<p>{len(val)} autoescuelas. Ver también los <a href="centros-examen.html">aprobados por centro de examen</a>.</p>{school_table(val)}',
+)
+
+# --- Madrid: selección parcial, sin % DGT ---
+page(
+    "madrid.html",
+    "Autoescuelas en Madrid",
+    f"""
+<p class="nota">Selección parcial de {len(mad)} sedes de la provincia de Madrid, no un directorio exhaustivo ni un ranking. Nombre, domicilio y teléfono salen de la web oficial de cada centro (consulta del 8 de noviembre de 2026): tres en Madrid capital y una en Alcalá de Henares (GALA San Vidal, calle San Vidal 13; no es una sede en la calle Alcalá). Hay muchas más autoescuelas en la provincia que no figuran aquí. El orden de la tabla no es un ranking.</p>
+<p>Aprobados del práctico B y códigos de autorización de la DGT: <b>sin datos</b>. No están verificados para estas fichas y no se copian porcentajes de otras provincias. Tiempos de espera: sin datos. No mostramos precios. Centros de examen de Madrid: sin datos en esta página.</p>
+<p>Madrid capital: GALA Clara del Rey, GALA Goya y Lara Plaza Elíptica. Alcalá de Henares: GALA San Vidal.</p>
+{school_table(mad)}
+<p>Guías del directorio: <a href="como-elegir.html">cómo elegir si hay lista de espera</a> · <a href="adelantar-examen.html">¿se puede adelantar el examen pagando?</a></p>
+<p><a href="index.html">Volver al directorio de España</a></p>
+""",
 )
 
 # --- Canarias hub + provinces ---
@@ -224,19 +270,96 @@ page(
 # redirect-compatible: keep old index content accessible — already have valencia.html
 # Also write a thin alias note: old bookmarks to index now see hub (OK)
 
-# verify internal links
+# GitHub Pages publica la raíz de main en /autoescuelas-valencia/
+ROOT = os.path.dirname(D)
+for fname in os.listdir(OUT):
+    if fname.endswith(".html"):
+        shutil.copyfile(os.path.join(OUT, fname), os.path.join(ROOT, fname))
+
+BASE = "/autoescuelas-valencia/"
 ok = True
-for f in os.listdir(OUT):
+
+def report(status, name, detail=""):
+    global ok
+    if status == "FALLA":
+        ok = False
+    line = f"{status} {name}"
+    if detail:
+        line += f" — {detail}"
+    print(line)
+
+rotos = []
+for f in sorted(os.listdir(OUT)):
     if not f.endswith(".html"):
         continue
-    for h in re.findall(r'href="([^"]+)"', open(os.path.join(OUT, f), encoding="utf-8").read()):
-        if not h.startswith("http") and not h.startswith("#") and not os.path.exists(os.path.join(OUT, h)):
-            print("ROTO", f, h)
-            ok = False
+    text = open(os.path.join(OUT, f), encoding="utf-8").read()
+    for h in re.findall(r'href="([^"]+)"', text):
+        if h.startswith(("http://", "https://", "#", "mailto:")):
+            continue
+        if h.startswith("/") or h.startswith("../") or "\\" in h:
+            rotos.append(f"{f} -> {h}")
+            continue
+        resolved = posixpath.normpath(BASE + h)
+        rel = resolved[len(BASE):] if resolved.startswith(BASE) else ""
+        if not rel or not os.path.exists(os.path.join(OUT, rel)):
+            rotos.append(f"{f} -> {h} => {resolved}")
+if rotos:
+    for item in rotos:
+        report("FALLA", "enlace_interno", item)
+else:
+    report("PASA", "enlaces_internos_relativos", f"resuelven bajo {BASE}")
+
+mad_html = open(os.path.join(OUT, "madrid.html"), encoding="utf-8").read()
+idx_html = open(os.path.join(OUT, "index.html"), encoding="utf-8").read()
+val_html = open(os.path.join(OUT, "valencia.html"), encoding="utf-8").read()
+can_html = open(os.path.join(OUT, "canarias.html"), encoding="utf-8").read()
+lp_html = open(os.path.join(OUT, "las-palmas.html"), encoding="utf-8").read()
+tf_html = open(os.path.join(OUT, "santa-cruz-de-tenerife.html"), encoding="utf-8").read()
+
+report("PASA" if len(mad_src) == 4 else "FALLA", "dataset_4_sedes", str(len(mad_src)))
+report(
+    "PASA" if all(r.get("aprobados_dgt_porcentaje") is None and r.get("aprobados_dgt_estado") == "NO VERIFICADO" for r in mad_src) else "FALLA",
+    "dataset_dgt_no_verificado",
+)
+esperados = [
+    "GALA Clara del Rey", "Calle Clara del Rey, 81", "28002", "671415691",
+    "https://autoescuelagala.com/autoescuela-clara-del-rey/",
+    "GALA Goya", "Calle de Goya, 108", "28009", "615946629",
+    "https://autoescuelagala.com/autoescuela-goya/",
+    "GALA San Vidal", "Calle San Vidal, 13", "Alcalá de Henares", "28803", "617978359",
+    "https://autoescuelagala.com/autoescuela-alcala/",
+    "Lara Plaza Elíptica", "Avenida Oporto, 4", "28019", "914601022 / 658362510",
+    "https://autoescuelalara.com/tiendas/plaza-eliptica/",
+    "Selección parcial", "no un directorio exhaustivo", "sin datos",
+]
+faltan = [s for s in esperados if s not in mad_html]
+report("PASA" if not faltan else "FALLA", "madrid_ficha", ", ".join(faltan) if faltan else "4 sedes y aviso de selección parcial")
+cuerpo = mad_html.split("</style>", 1)[-1]
+report("PASA" if not re.search(r"\d+(?:[.,]\d+)?\s*%", cuerpo) else "FALLA", "madrid_sin_porcentaje_numerico")
+report("PASA" if cuerpo.count(">sin datos</td><td>sin datos</td>") == 4 else "FALLA", "madrid_filas_sin_datos_dgt", str(cuerpo.count(">sin datos</td><td>sin datos</td>")))
+report("PASA" if "matraba-listados" not in mad_html else "FALLA", "madrid_sin_enlace_microdatos")
+report("PASA" if "mejores" not in mad_html.lower() else "FALLA", "madrid_sin_ranking_mejores")
+report("PASA" if "autoescuela-moncloa" not in mad_html and "autoescuela-pelayo" not in mad_html else "FALLA", "madrid_sin_sedes_excluidas")
+report("PASA" if 'href="madrid.html"' in idx_html and "aprobados DGT sin datos" in idx_html else "FALLA", "hub_enlace_madrid")
+report("PASA" if val_html.count("<tr><td>") == 22 and "51.2% (268/523)" in val_html else "FALLA", "valencia_conservada")
+report("PASA" if "Primera ampliación fuera de Valencia" in can_html and "30 sedes" in lp_html and "20 sedes" in tf_html else "FALLA", "canarias_conservada")
+report("PASA" if "Ingresos de este proyecto: no se inventan cifras aquí." in idx_html else "FALLA", "nota_ingresos_sin_cifras")
+copias_ok = all(
+    open(os.path.join(OUT, f), encoding="utf-8").read() == open(os.path.join(ROOT, f), encoding="utf-8").read()
+    for f in os.listdir(OUT) if f.endswith(".html")
+)
+report("PASA" if copias_ok and os.path.exists(os.path.join(ROOT, "madrid.html")) else "FALLA", "copia_raiz_github_pages")
+hay_sitemap = os.path.exists(os.path.join(ROOT, "sitemap.xml")) or os.path.exists(os.path.join(OUT, "sitemap.xml"))
+report("FALLA" if hay_sitemap else "PASA", "sitemap_ausente_sin_cambio", "no se crea sitemap.xml")
+print("NO VERIFICADO porcentajes_dgt_madrid — porcentaje null y estado NO VERIFICADO; la página muestra sin datos y no calcula microdatos")
+print("NO VERIFICADO codigos_autorizacion_madrid — no vienen en el dataset")
+print("NO VERIFICADO centros_examen_madrid — sin ficha verificada en esta ampliación")
+print("NO VERIFICADO ruta_publica_http — no se fusiona ni se despliega; ruta esperada https://marcosrodmart-hub.github.io/autoescuelas-valencia/madrid.html")
 print(
     "valencia", len(val),
     "las_palmas", len(lp),
     "tenerife", len(tf),
+    "madrid", len(mad),
     "paginas", sorted(os.listdir(OUT)),
     "enlaces_internos_ok", ok,
 )
